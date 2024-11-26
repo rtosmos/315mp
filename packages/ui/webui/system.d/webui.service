@@ -1,0 +1,11 @@
+[Unit]
+Description=AmberELEC Web UI
+ConditionPathExists=|/storage/.cache/services/webui.conf
+
+[Service]
+Restart=on-failure
+WorkingDirectory=/usr/share/webui
+ExecStart=sh /usr/share/webui/start.sh
+
+[Install]
+WantedBy=multi-user.target

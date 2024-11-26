@@ -1,0 +1,18 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+# Copyright (C) 2009-2012 Stephan Raue (stephan@openelec.tv)
+# Copyright (C) 2020-present AmberELEC (https://github.com/AmberELEC)
+
+PKG_NAME="beetle-wswan"
+PKG_VERSION="32bf70a3032a138baa969c22445f4b7821632c30"
+PKG_SHA256="457028d9ec6e76e0ec3e2e69a40b1bac392dae4fa4aca724c8a1500dbc54fc8c"
+PKG_LICENSE="GPLv2"
+PKG_SITE="https://github.com/libretro/beetle-wswan-libretro"
+PKG_URL="${PKG_SITE}/archive/${PKG_VERSION}.tar.gz"
+PKG_DEPENDS_TARGET="toolchain"
+PKG_LONGDESC="libretro implementation of Mednafen wswan"
+PKG_TOOLCHAIN="make"
+
+makeinstall_target() {
+  mkdir -p ${INSTALL}/usr/lib/libretro
+  cp mednafen_wswan_libretro.so ${INSTALL}/usr/lib/libretro/beetle_wswan_libretro.so
+}
