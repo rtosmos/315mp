@@ -6,34 +6,22 @@
 # Source predefined functions and variables
 . /etc/profile
 
-# Set max performance mode to start the boot.
-maxperf
+DEVICE=$(tr -d '\0' < /sys/firmware/devicetree/base/model)
+
+# Set performance mode to start the boot
+performance
+
+# Show splash logo
+/usr/bin/show_splash.sh &
 
 # write logs to tmpfs not the sdcard
 mkdir /tmp/logs
+mkdir -p /storage/.config/emulationstation/logs/
 ln -s /storage/roms/gamedata/retroarch/logs/ /tmp/logs/retroarch
+ln -s /storage/.config/emulationstation/logs/ /tmp/logs/emulationstation
 
 # Apply some kernel tuning
 sysctl vm.swappiness=1
-
-if [ -e "/storage/.newcfg" ]
-then
-  # Restore overclock setting
-  OVERCLOCK_SETTING=$(get_ee_setting overclock)
-  OVERCLOCK_STATE=$((grep "\-oc.dtb" /flash/boot.ini >/dev/null 2>&1 && echo 1) || echo 0)
-  if [ ! "${OVERCLOCK_STATE}" == "${OVERCLOCK_SETTING}" ]
-  then
-    echo -en '\e[0;0H\e[37mRestoring overclock...\e[0m' >/dev/console
-    if [ "${OVERCLOCK_SETTING}" = "1" ]
-    then
-      /usr/bin/amberelec-overclock on
-    else
-      /usr/bin/amberelec-overclock off
-    fi
-    sleep 1
-    systemctl reboot
-  fi
-fi
 
 # Restore config if backup exists
 BPATH="/storage/roms/backup/"
@@ -123,9 +111,6 @@ systemctl stop volume; systemctl start volume &
 # start services
 /usr/bin/startservices.sh &
 
-# Show splash Screen
-/usr/bin/show_splash.sh intro &
-
 # Migrate game data to the games partition
 GAMEDATA="/storage/roms/gamedata"
 if [ ! -d "${GAMEDATA}" ]
@@ -190,9 +175,6 @@ sync &
 # run custom_start before FE scripts
 /storage/.config/custom_start.sh before
 
-# default to ondemand performance in EmulationStation
-normperf
-
 # Restore last saved brightness
 BRIGHTNESS=$(get_ee_setting system.brightness)
 if [[ ! "${BRIGHTNESS}" =~ [0-9] ]]
@@ -215,9 +197,9 @@ if [ "$(get_ee_setting wifi.enabled)" == "0" ]
 then
   connmanctl disable wifi
   # Power down the WIFI device
-  if [ "$(cat /sys/firmware/devicetree/base/model)" == "Anbernic RG552" ]; then
+  if [ "$DEVICE" == "Anbernic RG552" ]; then
     echo 0 > /sys/class/gpio/gpio113/value
-  elif [ "$(cat /sys/firmware/devicetree/base/model)" == "Anbernic RG351P" ]; then
+  elif [ "$DEVICE" == "Anbernic RG351P" ]; then
     echo 0 > /sys/class/gpio/gpio110/value
   else
     echo 0 > /sys/class/gpio/gpio5/value
@@ -229,9 +211,68 @@ then
   /usr/bin/batocera-internal-wifi disable-no-refresh
 fi
 
+rm -f "/storage/.config/device" 2>/dev/null
+if [ "$DEVICE" == "Anbernic RG351MP" ]; then
+  VOLT1=$(cat /sys/bus/iio/devices/iio:device0/in_voltage1_raw)
+  VOLT2=$(cat /sys/bus/iio/devices/iio:device0/in_voltage2_raw)
+  if (( ${VOLT2} < 500 )); then
+    if ((${VOLT1} >= 450 && ${VOLT1} <= 800)); then
+      echo "R3xS" > /storage/.config/device
+    elif ((${VOLT1} >= 950 && ${VOLT1} <= 1035)); then
+      echo "R33S" > /storage/.config/device
+    else
+      echo "Unknown" > /storage/.config/device
+    fi
+  fi
+fi
 
-if [ "$(cat /sys/firmware/devicetree/base/model)" == "Anbernic RG351MP" ]; then
+if [ "$DEVICE" == "Anbernic RG351MP" ] || [ "$DEVICE" == "PowKiddy Magicx XU10" ]; then
 	amixer -c 0 cset iface=MIXER,name='Playback Path' SPK_HP
+fi
+
+# Initialize audio so the softvol mixer is created and audio is allowed to be changed
+# - This is the shortest, totally silent .wav I could create with audacity - duration is .001 seconds
+aplay /usr/bin/emustation-config-init.wav
+
+if [ "$EE_DEVICE" == "RG552" ] || [[ "$EE_DEVICE" =~ RG351 ]]; then
+  # For some reason the audio is being reseted to 100 at boot, so we reapply the saved settings here
+  /usr/bin/odroidgoa_utils.sh vol $(get_ee_setting "audio.volume")
+fi
+
+# hide tools entries
+if [ "$EE_DEVICE" == "RG351MP" ]; then
+  if [ "$DEVICE" == "PowKiddy Magicx XU10" ]  || [ "$DEVICE" == "SZDiiER D007 Plus" ]; then
+    xmlstarlet ed -L -u "//game[path='./display_fix.sh']/hidden" -v "true" /storage/.config/distribution/modules/gamelist.xml
+    xmlstarlet ed -L -u "//game[path='./joyleds_conf.sh']/hidden" -v "false" /storage/.config/distribution/modules/gamelist.xml
+  else
+    xmlstarlet ed -L -u "//game[path='./display_fix.sh']/hidden" -v "false" /storage/.config/distribution/modules/gamelist.xml
+    xmlstarlet ed -L -u "//game[path='./joyleds_conf.sh']/hidden" -v "true" /storage/.config/distribution/modules/gamelist.xml
+  fi
+fi
+
+# restore last played game
+timeout=60 #ms
+elapsed=0
+if [ -f /storage/.config/lastgame ]; then
+  echo -en '\e[0;0H\e[37mRestoring the last running game...\e[0m' >/dev/console
+  if [ "$(get_ee_setting retroachievements)" = "1" ]; then
+    if [[ $(ls /sys/class/net | grep -E '^(wlan|eth)[0-9]+$') ]]; then
+      while [[ ! $(ip route | grep default) ]]; do
+          if [[ $elapsed -ge 10 ]]; then
+            if [[ $elapsed -ge $timeout ]]; then
+              break
+            else
+              echo -en '\e[0;0H\e[37m\nRetroachievements are enabled...\nWaiting for network to become available...\e[0m' >/dev/console
+            fi
+          fi
+          sleep 0.1
+          ((elapsed++))
+      done
+    fi
+  fi
+  command=`cat /storage/.config/lastgame`
+  rm -rf /storage/.config/lastgame
+  sh -c -- "$command"
 fi
 
 # What to start at boot?
@@ -252,5 +293,13 @@ esac
 
 # run custom_start ending scripts
 /storage/.config/custom_start.sh after
+
+# default to ondemand/powersave in EmulationStation
+POWERSAVE_ES=$(get_ee_setting powersave_es)
+if [ "${POWERSAVE_ES}" == "1" ]; then
+  es_powersave &
+else
+  es_ondemand &
+fi
 
 clear > /dev/console

@@ -2,7 +2,7 @@
 # Copyright (C) 2022-present AmberELEC (https://github.com/AmberELEC)
 
 PKG_NAME="fake08"
-PKG_VERSION="d52e9ba89ca25e70b94cf8872aad7931f4184e5f"
+PKG_VERSION="0d26fd59103941e5f95e0ee665c6e0fb8c6b6f03"
 PKG_ARCH="aarch64"
 PKG_SITE="https://github.com/jtothebell/fake-08"
 PKG_URL="${PKG_SITE}.git"
@@ -11,6 +11,10 @@ PKG_LONGDESC="A Pico-8 player/emulator for console homebrew"
 PKG_TOOLCHAIN="make"
 
 PKG_MAKE_OPTS_TARGET="-C platform/libretro"
+
+pre_make_target() {
+  sed -i 's|togglePauseMenu();|//togglePauseMenu();|g' ${PKG_BUILD}/source/vm.cpp
+}
 
 makeinstall_target() {
   mkdir -p ${INSTALL}/usr/lib/libretro

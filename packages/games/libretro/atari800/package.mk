@@ -3,7 +3,7 @@
 # Copyright (C) 2022-present AmberELEC (https://github.com/AmberELEC)
 
 PKG_NAME="atari800"
-PKG_VERSION="410d7bf0c215f3444793a9cec51c129e7b67c400"
+PKG_VERSION="72884ccbf9ec8ce7b65d7fc6f44e127e3abdf799"
 PKG_LICENSE="GPL"
 PKG_SITE="https://github.com/libretro/libretro-atari800"
 PKG_URL="${PKG_SITE}.git"

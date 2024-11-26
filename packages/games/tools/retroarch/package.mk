@@ -2,16 +2,12 @@
 # Copyright (C) 2021-present AmberELEC (https://github.com/AmberELEC)
 
 PKG_NAME="retroarch"
-PKG_VERSION="6c2cc456284fcfa6fa5f94664950926c020d2f7b"
+PKG_VERSION="0792144fe3a7b59908b0afdb2c01722e79040360"
 PKG_SITE="https://github.com/libretro/RetroArch"
 PKG_URL="${PKG_SITE}.git"
 PKG_LICENSE="GPLv3"
 PKG_DEPENDS_TARGET="toolchain SDL2 alsa-lib openssl freetype zlib retroarch-assets core-info ffmpeg libass joyutils empty ${OPENGLES} nss-mdns openal-soft libogg libvorbis libvorbisidec libvpx libpng libdrm librga pulseaudio flac"
 PKG_LONGDESC="Reference frontend for the libretro API."
-
-if [[ "${DEVICE}" == RG351V ]]; then
-  PKG_PATCH_DIRS="${DEVICE}"
-fi
 
 if [[ "${DEVICE}" =~ RG351 ]]; then
   PKG_PATCH_DIRS="RG351-ui-patches"
@@ -27,7 +23,9 @@ pre_configure_target() {
                              --enable-alsa \
                              --enable-udev \
                              --disable-opengl1 \
+                             --disable-opengles3 \
                              --disable-opengl \
+                             --disable-opengl_core \
                              --disable-vulkan \
                              --disable-vulkan_display \
                              --enable-egl \
@@ -39,10 +37,11 @@ pre_configure_target() {
                              --disable-discord \
                              --disable-vg \
                              --disable-sdl \
-                             --enable-sdl2 \
+                             --disable-sdl2 \
                              --disable-ffmpeg \
-                             --enable-opengles3 \
-                             --enable-opengles3_2 \
+                             --disable-oss \
+                             --disable-tinyalsa \
+                             --disable-pulse \
                              --enable-kms \
                              --disable-mali_fbdev \
                              --enable-odroidgo2"
@@ -57,7 +56,7 @@ pre_configure_target() {
 }
 
 make_target() {
-  make HAVE_LIBRETRODB=1 HAVE_NETWORKING=1 HAVE_LAKKA=1 HAVE_ZARCH=1 HAVE_QT=0 HAVE_LANGEXTRA=1
+  make HAVE_LIBRETRODB=1 HAVE_NETWORKING=1 HAVE_LAKKA=1 HAVE_ZARCH=1 HAVE_QT=0 HAVE_LANGEXTRA=1 HAVE_LAKKA_PROJECT=0 HAVE_LAKKA_SERVER=0
   [ $? -eq 0 ] && echo "(retroarch ok)" || { echo "(retroarch failed)" ; exit 1 ; }
   make -C gfx/video_filters compiler=${CC} extra_flags="${CFLAGS}"
   [ $? -eq 0 ] && echo "(video filters ok)" || { echo "(video filters failed)" ; exit 1 ; }

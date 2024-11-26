@@ -2,11 +2,12 @@
 # Copyright (C) 2021-present AmberELEC (https://github.com/AmberELEC)
 
 PKG_NAME="raze"
-PKG_VERSION="53425e3a10e040089982cca900084da0c01eb2d2"
+PKG_VERSION="5e9ee2509dd520664179509b39358a8369a306f9"
 PKG_LICENSE="GPL"
 PKG_SITE="https://github.com/dhwz/Raze"
 PKG_URL="${PKG_SITE}.git"
-PKG_DEPENDS_TARGET="toolchain SDL2 raze:host zmusic libvpx"
+PKG_DEPENDS_HOST="toolchain zmusic:host libwebp:host"
+PKG_DEPENDS_TARGET="toolchain SDL2 raze:host zmusic libvpx libwebp"
 PKG_LONGDESC="Raze is a fork of Build engine games backed by GZDoom tech and combines Duke Nukem 3D, Blood, Redneck Rampage, Shadow Warrior and Exhumed/Powerslave in a single package."
 PKG_TOOLCHAIN="cmake-make"
 

@@ -3,8 +3,8 @@
 # Copyright (C) 2022-present AmberELEC (https://github.com/AmberELEC)
 
 PKG_NAME="px68k"
-PKG_VERSION="4c7542e34df71e3ebab77b5867901747d58dbb38"
-PKG_SHA256="03e375904bfb47499d53817996f0e6a1dd6c503865ed2af0f045ca35933ed9ec"
+PKG_VERSION="7dd315c624d2c94f0c9fb3a902166949bb68b5d3"
+PKG_SHA256="8ece1153cbbabc5f8f04acdb48fe40f8a8fc4843ac2d488bfb34adb268f8c941"
 PKG_LICENSE="Unknown"
 PKG_SITE="https://github.com/libretro/px68k-libretro"
 PKG_URL="${PKG_SITE}/archive/${PKG_VERSION}.tar.gz"

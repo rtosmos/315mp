@@ -10,29 +10,31 @@ PKG_DEPENDS_TARGET="toolchain ${OPENGLES} emulationstation retroarch retrorun kl
 PKG_LONGDESC="AmberELEC Meta Package"
 PKG_TOOLCHAIN="make"
 
-LIBRETRO_CORES="81 a5200 arduous atari800 beetle-gba beetle-lynx beetle-ngp beetle-pce beetle-pce-fast beetle-pcfx beetle-supafaust beetle-supergrafx beetle-vb beetle-wswan bluemsx cap32 crocods \
-                dosbox-core dosbox-pure easyrpg emuscv ep128emu fake08 fbalpha2012 fbalpha2019 fbneo fceumm flycast flycast2021 fmsx freechaf freeintv freej2me fuse-libretro gambatte gearboy gearcoleco \
-                gearsystem genesis-plus-gx genesis-plus-gx-wide gpsp gw-libretro handy hatari jaxe lowresnx mame mame2000 mame2003-plus mame2010 mame2015 mame2016 meowpc98 mgba mojozork mupen64plus-nx \
-                neocd_libretro nestopia np2kai o2em opera parallel-n64 pcsx_rearmed picodrive pokemini potator ppsspp prboom prosystem puae puae2021 px68k quasi88 quicknes race same_cdi sameboy sameduck \
-                scummvm smsplus-gx snes9x snes9x2002 snes9x2005_plus snes9x2010 stella stella-2014 swanstation tgbdual tic-80 uae4arm uw8 uzem vbam vba-next vecx vice virtualjaguar wasm4 xmil"
+if [[ "${BASE_BUILD}" == "true" ]];
+then
+  PKG_EMUS=""
+else
+  LIBRETRO_CORES="81 a5200 arduous atari800 beetle-gba beetle-lynx beetle-ngp beetle-pce beetle-pce-fast beetle-pcfx beetle-supafaust beetle-supergrafx beetle-vb beetle-wswan bluemsx cap32 crocods \
+                  doublecherrygb dosbox-core dosbox-pure easyrpg emuscv ep128emu fake08 fbalpha2012 fbalpha2019 fbneo fceumm flycast flycast2021 fmsx freechaf freeintv freej2me fuse-libretro gambatte \
+                  gearboy gearcoleco gearsystem genesis-plus-gx genesis-plus-gx-wide gpsp gw-libretro handy hatari jaxe lowresnx mame mame2000 mame2003-plus mame2010 mame2015 mame2016 meowpc98 mgba mojozork \
+                  mupen64plus-nx neocd_libretro nestopia np2kai o2em opera parallel-n64 pcsx_rearmed picodrive pokemini potator ppsspp prboom prosystem puae puae2021 px68k quasi88 quicknes race same_cdi \
+                  sameboy sameduck scummvm smsplus-gx snes9x snes9x2002 snes9x2005_plus snes9x2010 stella stella-2014 swanstation tgbdual theodore tic-80 uae4arm uw8 uzem vbam vba-next vecx vice vircon32 \
+                  virtualjaguar wasm4 xmil"
 
-LIBRETRO_CORES_EXTRA="beetle_snes bsnes bsnes2014_balanced bsnes2014_performance bsnes_mercury_balanced bsnes_mercury_performance mesen mesen-s"
+  LIBRETRO_CORES_EXTRA="beetle_snes bsnes bsnes2014_balanced bsnes2014_performance bsnes_mercury_balanced bsnes_mercury_performance geolith mesen mesen-s melonds melondsds"
 
-PKG_EMUS="${LIBRETRO_CORES}"
+  PKG_EMUS="${LIBRETRO_CORES}"
 
-if [[ "${DEVICE}" == "RG552" ]]; then
-  PKG_EMUS+=" ${LIBRETRO_CORES_EXTRA}"
+  if [[ "${DEVICE}" == "RG552" ]]; then
+    PKG_EMUS+=" ${LIBRETRO_CORES_EXTRA}"
+  fi
+
+  PKG_EMUS+=" advancemame ppssppsa amiberry hatarisa openbor scummvmsa solarus hypseus-singe ecwolf lzdoom gzdoom raze drastic duckstation mupen64plussa piemu yabasanshiroSA"
 fi
 
-PKG_EMUS+=" advancemame ppssppsa amiberry hatarisa openbor scummvmsa solarus hypseus-singe ecwolf lzdoom gzdoom raze drastic duckstation mupen64plussa piemu yabasanshiroSA"
-
-PKG_TOOLS="bash dialog grep wget ffmpeg libjpeg-turbo common-shaders glsl-shaders MC util-linux xmlstarlet sixaxis jslisten evtest mpv bluetool rs97-commander-sdl2 jslisten gnupg gzip valgrind strace gdb apitrace rg351p-js2xbox odroidgoa-utils rs97-commander-sdl2 textviewer 351files rclone jstest-sdl sdljoytest evdev-joystick gptokeyb"
+PKG_TOOLS="bash dialog grep wget ffmpeg libjpeg-turbo common-shaders glsl-shaders MC util-linux xmlstarlet sixaxis jslisten evtest mpv bluetool rs97-commander-sdl2 jslisten gnupg gzip valgrind strace gdb apitrace rg351p-js2xbox odroidgoa-utils rs97-commander-sdl2 textviewer 351files rclone syncthing plymouth-lite imagemagick jstest-sdl sdljoytest evdev-joystick gptokeyb fbgrab"
 PKG_RETROPIE_DEP="pyudev six git dbus-python coreutils"
-PKG_DEPENDS_TARGET+=" ${PKG_TOOLS} ${PKG_RETROPIE_DEP} ${PKG_EMUS} ports"
-
-if [[ "${DEVICE}" == "RG552" ]]; then
-  PKG_DEPENDS_TARGET+=" webui"
-fi
+PKG_DEPENDS_TARGET+=" ${PKG_TOOLS} ${PKG_RETROPIE_DEP} ${PKG_EMUS} ports webui"
 
 make_target() {
   :
@@ -44,6 +46,12 @@ makeinstall_target() {
     mkdir -p ${INSTALL}/usr/config/emulationstation
     cp -f $(get_build_dir emulationstation)/.install_pkg/usr/config/emulationstation/es_systems.cfg ${INSTALL}/usr/config/emulationstation/es_systems.cfg
     for CORE in ${LIBRETRO_CORES_EXTRA}; do
+      if [[ $CORE == "geolith" ]]; then
+        sed -i "s|<extension>.neo .7z .zip</extension>|<extension>.7z .zip</extension>|g" ${INSTALL}/usr/config/emulationstation/es_systems.cfg
+      fi
+      if [[ $CORE == "melonds" ]]; then
+        sed -i -e '/<emulator name/{:a;N;/<\/emulator>/!ba;/melonds/d}' ${INSTALL}/usr/config/emulationstation/es_systems.cfg
+      fi
       sed -i "s|<core>$CORE</core>||g" ${INSTALL}/usr/config/emulationstation/es_systems.cfg
       sed -i '/^[[:space:]]*$/d' ${INSTALL}/usr/config/emulationstation/es_systems.cfg
     done
@@ -100,21 +108,10 @@ makeinstall_target() {
   mkdir -p ${INSTALL}/usr/share/libretro-database
      touch ${INSTALL}/usr/share/libretro-database/dummy
 
-  # Move plymouth-lite bin to show splash screen
-  cp $(get_build_dir plymouth-lite)/.install_init/usr/bin/ply-image ${INSTALL}/usr/bin
-
   mkdir -p ${INSTALL}/usr/config/splash
 
   find_file_path "splash/splash-*.png" && cp ${FOUND_PATH} ${INSTALL}/usr/config/splash
-
-  mkdir -p ${INSTALL}/usr/share/bootloader
-  if [ "${DEVICE}" == "RG351P" ]; then
-    find_file_path "splash/splash-480.bmp" && cp ${FOUND_PATH} ${INSTALL}//usr/share/bootloader/logo.bmp
-  elif [ "${DEVICE}" == "RG351V" ] || [ "${DEVICE}" == "RG351MP" ] ; then
-    find_file_path "splash/splash-640.bmp" && cp ${FOUND_PATH} ${INSTALL}//usr/share/bootloader/logo.bmp
-  elif [ "${DEVICE}" == "RG552" ]; then
-    find_file_path "splash/splash-1920.bmp" && cp ${FOUND_PATH} ${INSTALL}//usr/share/bootloader/logo.bmp
-  fi
+  find_file_path "splash/blank.png" && cp ${FOUND_PATH} ${INSTALL}/usr/config/splash
 }
 
 post_install() {
@@ -128,11 +125,22 @@ post_install() {
   done
 
   mkdir -p ${INSTALL}/etc/retroarch-joypad-autoconfig
-  cp -r ${PKG_DIR}/gamepads/* ${INSTALL}/etc/retroarch-joypad-autoconfig
+  if [[ "${DEVICE}" == "RG351P" ]] || [[ "${DEVICE}" == "RG351V" ]]; then
+    cp -r ${PKG_DIR}/gamepads/OpenSimHardware* ${INSTALL}/etc/retroarch-joypad-autoconfig
+  else
+    cp -r ${PKG_DIR}/gamepads/GO-Super* ${INSTALL}/etc/retroarch-joypad-autoconfig
+  fi
   ln -sf amberelec.target ${INSTALL}/usr/lib/systemd/system/default.target
   enable_service amberelec-autostart.service
+  enable_service lastgame.service
   if [[ "${DEVICE}" == "RG552" ]]; then
     enable_service fan_control.service
+  fi
+
+  if [[ "${DEVICE}" =~ "RG351" ]]; then
+    cp -f  ${PKG_DIR}/clocks/RK3326/clocklimits ${INSTALL}/etc
+  elif [[ "${DEVICE}" == "RG552" ]]; then
+    cp -f  ${PKG_DIR}/clocks/RK3399/clocklimits ${INSTALL}/etc
   fi
 
   echo "" >${INSTALL}/etc/issue
@@ -147,7 +155,6 @@ post_install() {
 
   cp ${PKG_DIR}/sources/amberelec.dialogrc ${INSTALL}/etc
   cp ${PKG_DIR}/sources/autostart.sh ${INSTALL}/usr/bin
-  cp ${PKG_DIR}/sources/shutdown.sh ${INSTALL}/usr/bin
   cp ${PKG_DIR}/sources/pico-8.sh ${INSTALL}/usr/bin
   cp ${PKG_DIR}/sources/pico-8.sh "${INSTALL}/usr/config/distribution/modules/Start Pico-8.sh"
   cp ${PKG_DIR}/sources/scripts/* ${INSTALL}/usr/bin

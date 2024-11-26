@@ -1,0 +1,106 @@
+# SPDX-License-Identifier: GPL-2.0
+# Copyright (C) 2017-present Team LibreELEC (https://libreelec.tv)
+
+PKG_RKBIN="$(get_build_dir rkbin)"
+
+if [ $DEVICE = "RG552" ]; then
+  PKG_SOC="rk3399"
+  PKG_DATAFILE="$PKG_RKBIN/bin/rk33/rk3399_ddr_933MHz_v1.30.bin"
+  PKG_LOADER="$PKG_RKBIN/bin/rk33/rk3399_miniloader_v1.30.bin"
+  PKG_BL31="$PKG_RKBIN/bin/rk33/rk3399_bl31_v1.36.elf"
+else
+  PKG_SOC="px30"
+  PKG_DATAFILE="$PKG_RKBIN/bin/rk33/rk3326_ddr_333MHz_v1.15.bin"
+  PKG_LOADER="$PKG_RKBIN/bin/rk33/rk3326_miniloader_v1.20.bin"
+  PKG_BL31="$PKG_RKBIN/bin/rk33/rk3326_bl31_v1.21.elf"
+fi
+
+PKG_LOAD_ADDR="0x00200000"
+
+if [ -n "$PKG_DATAFILE" -a -n "$PKG_LOADER" ]; then
+  tools/mkimage -n $PKG_SOC -T rksd -d "$PKG_DATAFILE" idbloader.img
+  cat "$PKG_LOADER" >> idbloader.img
+  cp -av idbloader.img $INSTALL/usr/share/bootloader
+fi
+
+if [ -n "$PKG_LOAD_ADDR" ]; then
+  $PKG_RKBIN/tools/loaderimage --pack --uboot u-boot-dtb.bin uboot.img $PKG_LOAD_ADDR
+  cp -av uboot.img $INSTALL/usr/share/bootloader
+fi
+
+cat >$INSTALL/usr/share/bootloader/boot.ini <<EOF
+odroidgoa-uboot-config
+
+setenv fdt_addr_r "0x01f00000"
+setenv loadaddr "${PKG_LOAD_ADDR}"
+setenv scriptaddr "0x00500000"
+setenv kernel_addr_r "0x02008000"
+EOF
+
+if [ $DEVICE = "RG552" ]; then
+  cat >>$INSTALL/usr/share/bootloader/boot.ini <<EOF
+
+sysboot mmc 1:1 any \${scriptaddr} /extlinux/rk3399-rg552-linux.dtb.conf
+
+EOF
+elif [ $DEVICE = "RG351P" ]; then
+  cat >>$INSTALL/usr/share/bootloader/boot.ini <<EOF
+
+sysboot mmc 1:1 any \${scriptaddr} /extlinux/rk3326-rg351p-linux.dtb.conf
+
+EOF
+elif [ $DEVICE = "RG351V" ]; then
+  cat >>$INSTALL/usr/share/bootloader/boot.ini <<EOF
+
+sysboot mmc 1:1 any \${scriptaddr} /extlinux/rk3326-rg351v-linux.dtb.conf
+
+EOF
+else
+  cat >>$INSTALL/usr/share/bootloader/boot.ini <<EOF
+
+if test \${hwrev} = 'xu10'; then
+  sysboot mmc 1:1 any \${scriptaddr} /extlinux/rk3326-xu10-linux.dtb.conf
+elif test \${hwrev} = 'd007'; then
+  sysboot mmc 1:1 any \${scriptaddr} /extlinux/rk3326-d007-linux.dtb.conf
+else
+  sysboot mmc 1:1 any \${scriptaddr} /extlinux/rk3326-rg351mp-linux.dtb.conf
+fi
+
+EOF
+fi
+
+if [ -n "$PKG_BL31" ]; then
+  cat >trust.ini <<EOF
+[BL30_OPTION]
+SEC=0
+[BL31_OPTION]
+SEC=1
+PATH=$PKG_BL31
+ADDR=0x00040000
+[BL32_OPTION]
+SEC=0
+[BL33_OPTION]
+SEC=0
+[OUTPUT]
+PATH=trust.img
+EOF
+  $PKG_RKBIN/tools/trust_merger --verbose trust.ini
+  cp -av trust.img $INSTALL/usr/share/bootloader
+fi
+
+LE_TMP=$(mktemp -d)
+mkdir -p "${LE_TMP}/extlinux" 
+mkdir -p $INSTALL/usr/share/bootloader/extlinux
+
+LINUX_DTS_DIR=$(get_build_dir linux)/.install_pkg/usr/share/bootloader
+  for dtb in $(find $LINUX_DTS_DIR -name "*.dtb")
+  do
+cat << EOF > "${LE_TMP}/extlinux/$(basename ${dtb}).conf"
+LABEL ${DISTRO_BOOTLABEL}
+  LINUX /${KERNEL_NAME}
+  FDT /$(basename ${dtb})
+  APPEND boot=UUID=@BOOT_UUID@ disk=UUID=@DISK_UUID@ quiet ${EXTRA_CMDLINE}
+EOF
+
+cp -a "${LE_TMP}/extlinux/$(basename ${dtb}).conf" $INSTALL/usr/share/bootloader/extlinux
+done

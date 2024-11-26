@@ -39,7 +39,6 @@ function get_setting() {
 ### GLOBAL SETTINGS ###
 echo 'Global settings.'
 # Auto Save
-# Get configuration from distribution.conf and set to retrorun.cfg
 get_setting "auto_save"
 echo "auto_save:${EES}"
 if [ "${EES}" == "auto" ] || [ "${EES}" == "false" ] || [ "${EES}" == "none" ] || [ "${EES}" == "0" ]; then
@@ -50,9 +49,7 @@ else
 	echo "retrorun_auto_save = ${EES}" >> ${RRCONF}
 fi
 
-
 # Audio Buffer
-# Get configuration from distribution.conf and set to retrorun.cfg
 get_setting "audio_buffer"
 echo "audio_buffer:${EES}"
 if [ "${EES}" == "auto" ] || [ "${EES}" == "false" ] || [ "${EES}" == "none" ] || [ "${EES}" == "0" ]; then
@@ -64,7 +61,6 @@ else
 fi
 
 # Mouse Speed Factor
-# Get configuration from distribution.conf and set to retrorun.cfg
 get_setting "mouse_speed"
 echo "mouse_speed:${EES}"
 if [ "${EES}" == "auto" ] || [ "${EES}" == "false" ] || [ "${EES}" == "none" ] || [ "${EES}" == "0" ]; then
@@ -76,7 +72,6 @@ else
 fi
 
 # Map left analog to DPAD
-# Get configuration from distribution.conf and set to retrorun.cfg
 get_setting "map_left_analog_to_dpad"
 echo "map_left_analog_to_dpad:${EES}"
 if [ "${EES}" == "auto" ] || [ "${EES}" == "false" ] || [ "${EES}" == "none" ] || [ "${EES}" == "0" ]; then
@@ -88,7 +83,6 @@ else
 fi
 
 # Game Aspect Ratio
-# Get configuration from distribution.conf and set to retrorun.cfg
 get_setting "game_aspect_ratio"
 echo "game_aspect_ratio:${EES}"
 if [ "${EES}" == "auto" ] || [ "${EES}" == "false" ] || [ "${EES}" == "none" ] || [ "${EES}" == "0" ]; then
@@ -100,7 +94,6 @@ else
 fi
 
 # Show FPS
-# Get configuration from distribution.conf and set to retrorun.cfg
 get_setting "show_fps"
 echo "show_fps:${EES}"
 if [ "${EES}" == "auto" ] || [ "${EES}" == "disabled" ] || [ "${EES}" == "false" ] || [ "${EES}" == "none" ] || [ "${EES}" == "0" ]; then
@@ -111,9 +104,7 @@ else
 	echo "retrorun_fps_counter = ${EES}" >> ${RRCONF}
 fi
 
-
 # Swap triggers
-# Get configuration from distribution.conf and set to retrorun.cfg
 get_setting "swap_triggers"
 echo "swap_triggers:${EES}"
 if [ "${EES}" == "auto" ] || [ "${EES}" == "disabled" ] || [ "${EES}" == "false" ] || [ "${EES}" == "none" ] || [ "${EES}" == "0" ]; then
@@ -124,8 +115,29 @@ else
 	echo "retrorun_swap_l1r1_with_l2r2 = ${EES}" >> ${RRCONF}
 fi
 
-# Swap triggers
-# Get configuration from distribution.conf and set to retrorun.cfg
+# Swap analog sticks
+get_setting "swap_analog_sticks"
+echo "swap_analog_sticks:${EES}"
+if [ "${EES}" == "auto" ] || [ "${EES}" == "disabled" ] || [ "${EES}" == "false" ] || [ "${EES}" == "none" ] || [ "${EES}" == "0" ]; then
+	sed -i "/^retrorun_swap_sticks/d" ${RRCONF}
+	echo 'retrorun_swap_sticks = false' >> ${RRCONF}
+else
+	sed -i "/^retrorun_swap_sticks/d" ${RRCONF}
+	echo "retrorun_swap_sticks = ${EES}" >> ${RRCONF}
+fi
+
+# Tate Mode
+get_setting "tate_mode"
+echo "tate_mode:${EES}"
+if [ "${EES}" == "auto" ] || [ "${EES}" == "false" ] || [ "${EES}" == "none" ] || [ "${EES}" == "0" ]; then
+	sed -i "/^retrorun_tate_mode/d" ${RRCONF}
+	echo 'retrorun_tate_mode = auto' >> ${RRCONF}
+else
+	sed -i "/^retrorun_tate_mode/d" ${RRCONF}
+	echo "retrorun_tate_mode = ${EES}" >> ${RRCONF}
+fi
+
+# Force FPS
 get_setting "force_fps"
 echo "force_fps:${EES}"
 if [ "${EES}" == "auto" ] || [ "${EES}" == "disabled" ] || [ "${EES}" == "false" ] || [ "${EES}" == "none" ] || [ "${EES}" == "0" ]; then
@@ -139,7 +151,6 @@ fi
 ### MISC SETTINGS ###
 echo 'Misc settings.'
 # Internal Resolution
-# Get configuration from distribution.conf and set to retrorun.cfg
 get_setting "internal_resolution"
 echo "internal_resolution:${EES}"
 if [ "${EES}" == "auto" ] || [ "${EES}" == "false" ] || [ "${EES}" == "none" ] || [ "${EES}" == "0" ]; then
@@ -169,7 +180,6 @@ fi
 ### PARALLEL-N64 SETTINGS ###
 echo 'Parallel-n64 settings.'
 # Parallel-N64 Graphic plug-in
-# Get configuration from distribution.conf and set to retrorun.cfg
 get_setting "gfx_plugin"
 echo "gfx_plugin:${EES}"
 if [ "${EES}" == "auto" ] || [ "${EES}" == "false" ] || [ "${EES}" == "none" ] || [ "${EES}" == "0" ]; then
@@ -185,7 +195,6 @@ else
 fi
 
 # Parallel-N64 Overclock
-# Get configuration from distribution.conf and set to retrorun.cfg
 get_setting "overclock"
 echo "overclock:${EES}"
 if [ "${EES}" == "auto" ] || [ "${EES}" == "false" ] || [ "${EES}" == "none" ] || [ "${EES}" == "0" ]; then
@@ -203,7 +212,6 @@ fi
 ### FLYCAST SETTINGS ###
 echo 'Flycast settings.'
 # Flycast: Synchronous Rendering
-# Get configuration from distribution.conf and set to retrorun.cfg
 get_setting "synchronous_rendering"
 echo "synchronous_rendering:${EES}"
 if [ "${EES}" == "auto" ] || [ "${EES}" == "false" ] || [ "${EES}" == "none" ] || [ "${EES}" == "0" ]; then
@@ -225,7 +233,6 @@ else
 fi
 
 # Flycast: Enables/Disables a division optimization
-# Get configuration from distribution.conf and set to retrorun.cfg
 get_setting "div_matching"
 echo "div_matching:${EES}"
 if [ "${EES}" == "auto" ] || [ "${EES}" == "false" ] || [ "${EES}" == "none" ] || [ "${EES}" == "0" ]; then
@@ -247,7 +254,6 @@ else
 fi
 
 # Flycast Auto Frameskip
-# Get configuration from distribution.conf and set to retrorun.cfg
 # default value for flycast_auto_skip_frame it's 'some'
 if [[ "$EE_DEVICE" == "RG552" ]]; then
 	DEFAULT_AUTO_SKIP_FRAME='disabled' # this is better on RG552
@@ -269,7 +275,6 @@ else
 fi
 
 # Flycast: Enables/Disables the DSP. Fixes audio issues on some games.
-# Get configuration from distribution.conf and set to retrorun.cfg
 get_setting "dsp"
 echo "dsp:${EES}"
 if [ "${EES}" == "auto" ] || [ "${EES}" == "false" ] || [ "${EES}" == "none" ] || [ "${EES}" == "0" ]; then
@@ -293,7 +298,6 @@ fi
 ### PSX PCSX_REARMED ###
 echo 'Pcsx-rearmed settings.'
 # PSX CPU Clock
-# Get configuration from distribution.conf and set to retrorun.cfg
 get_setting "psx_cpu_clock"
 echo "psx_cpu_clock:${EES}"
 if [ "${EES}" == "auto" ] || [ "${EES}" == "false" ] || [ "${EES}" == "none" ] || [ "${EES}" == "0" ]; then
@@ -308,10 +312,121 @@ else
 	fi
 fi
 
+# Pcsx-rearmed
+# PSX Threaded Rendering
+get_setting "psx_gpu_thread_rendering"
+echo "pcsx_rearmed_gpu_thread_rendering:${EES}"
+if [ "${EES}" == "auto" ] || [ "${EES}" == "false" ] || [ "${EES}" == "none" ] || [ "${EES}" == "0" ]; then
+	if [[ "${CORE}" == "pcsx_rearmed" ]]; then
+		sed -i "/^pcsx_rearmed_gpu_thread_rendering/d" ${RRCONF}
+		echo 'pcsx_rearmed_gpu_thread_rendering = disabled' >> ${RRCONF}
+	fi
+else
+	if [[ "${CORE}" == "pcsx_rearmed" ]]; then
+		sed -i "/^pcsx_rearmed_gpu_thread_rendering/d" ${RRCONF}
+		echo "pcsx_rearmed_gpu_thread_rendering = ${EES}" >> ${RRCONF}
+	fi
+fi
+
+# Pcsx-rearmed
+# PSX Enhanced resolution
+get_setting "psx_enhancement_resolution"
+echo "pcsx_rearmed_neon_enhancement_enable:${EES}"
+if [ "${EES}" == "auto" ] || [ "${EES}" == "false" ] || [ "${EES}" == "none" ] || [ "${EES}" == "0" ]; then
+	if [[ "${CORE}" == "pcsx_rearmed" ]]; then
+		sed -i "/^pcsx_rearmed_neon_enhancement_enable/d" ${RRCONF}
+		echo 'pcsx_rearmed_neon_enhancement_enable = disabled' >> ${RRCONF}
+	fi
+else
+	if [[ "${CORE}" == "pcsx_rearmed" ]]; then
+		sed -i "/^pcsx_rearmed_neon_enhancement_enable/d" ${RRCONF}
+		echo "pcsx_rearmed_neon_enhancement_enable = ${EES}" >> ${RRCONF}
+	fi
+fi
+
+# Pcsx-rearmed
+# PSX Enhanced resolution Speed Hack
+get_setting "psx_enhancement_resolution_speed_hack"
+echo "pcsx_rearmed_neon_enhancement_no_main:${EES}"
+if [ "${EES}" == "auto" ] || [ "${EES}" == "false" ] || [ "${EES}" == "none" ] || [ "${EES}" == "0" ]; then
+	if [[ "${CORE}" == "pcsx_rearmed" ]]; then
+		sed -i "/^pcsx_rearmed_neon_enhancement_no_main/d" ${RRCONF}
+		echo 'pcsx_rearmed_neon_enhancement_no_main = disabled' >> ${RRCONF}
+	fi
+else
+	if [[ "${CORE}" == "pcsx_rearmed" ]]; then
+		sed -i "/^pcsx_rearmed_neon_enhancement_no_main/d" ${RRCONF}
+		echo "pcsx_rearmed_neon_enhancement_no_main = ${EES}" >> ${RRCONF}
+	fi
+fi
+
+# Pcsx-rearmed
+# PSX nhanced Resolution Texture Adjustment
+get_setting "psx_enhancement_resolution_tex_adj"
+echo "pcsx_rearmed_neon_enhancement_tex_adj:${EES}"
+if [ "${EES}" == "auto" ] || [ "${EES}" == "false" ] || [ "${EES}" == "none" ] || [ "${EES}" == "0" ]; then
+	if [[ "${CORE}" == "pcsx_rearmed" ]]; then
+		sed -i "/^pcsx_rearmed_neon_enhancement_tex_adj/d" ${RRCONF}
+		echo 'pcsx_rearmed_neon_enhancement_tex_adj = disabled' >> ${RRCONF}
+	fi
+else
+	if [[ "${CORE}" == "pcsx_rearmed" ]]; then
+		sed -i "/^pcsx_rearmed_neon_enhancement_tex_adj/d" ${RRCONF}
+		echo "pcsx_rearmed_neon_enhancement_tex_adj = ${EES}" >> ${RRCONF}
+	fi
+fi
+
+# Pcsx-rearmed
+# PSX Disable SMC Checks (Will cause crashes when loading, and lead to memory card failure)
+get_setting "psx_nosmccheck"
+echo "pcsx_rearmed_nosmccheck:${EES}"
+if [ "${EES}" == "auto" ] || [ "${EES}" == "false" ] || [ "${EES}" == "none" ] || [ "${EES}" == "0" ]; then
+	if [[ "${CORE}" == "pcsx_rearmed" ]]; then
+		sed -i "/^pcsx_rearmed_nosmccheck/d" ${RRCONF}
+		echo 'pcsx_rearmed_nosmccheck = disabled' >> ${RRCONF}
+	fi
+else
+	if [[ "${CORE}" == "pcsx_rearmed" ]]; then
+		sed -i "/^pcsx_rearmed_nosmccheck/d" ${RRCONF}
+		echo "pcsx_rearmed_nosmccheck = ${EES}" >> ${RRCONF}
+	fi
+fi
+
+# Pcsx-rearmed
+# PSX Assume GTE Regs Unneeded
+get_setting "psx_gteregsunneeded"
+echo "pcsx_rearmed_gteregsunneeded:${EES}"
+if [ "${EES}" == "auto" ] || [ "${EES}" == "false" ] || [ "${EES}" == "none" ] || [ "${EES}" == "0" ]; then
+	if [[ "${CORE}" == "pcsx_rearmed" ]]; then
+		sed -i "/^pcsx_rearmed_gteregsunneeded/d" ${RRCONF}
+		echo 'pcsx_rearmed_gteregsunneeded = disabled' >> ${RRCONF}
+	fi
+else
+	if [[ "${CORE}" == "pcsx_rearmed" ]]; then
+		sed -i "/^pcsx_rearmed_gteregsunneeded/d" ${RRCONF}
+		echo "pcsx_rearmed_gteregsunneeded = ${EES}" >> ${RRCONF}
+	fi
+fi
+
+# Pcsx-rearmed
+# Disable GTE Flags
+get_setting "psx_nogteflags"
+echo "pcsx_rearmed_nogteflags:${EES}"
+if [ "${EES}" == "auto" ] || [ "${EES}" == "false" ] || [ "${EES}" == "none" ] || [ "${EES}" == "0" ]; then
+	if [[ "${CORE}" == "pcsx_rearmed" ]]; then
+		sed -i "/^pcsx_rearmed_nogteflags/d" ${RRCONF}
+		echo 'pcsx_rearmed_nogteflags = disabled' >> ${RRCONF}
+	fi
+else
+	if [[ "${CORE}" == "pcsx_rearmed" ]]; then
+		sed -i "/^pcsx_rearmed_nogteflags/d" ${RRCONF}
+		echo "pcsx_rearmed_nogteflags = ${EES}" >> ${RRCONF}
+	fi
+fi
+
 ### PSX DUCKSTATION ###
 echo 'Psx-duckstation settings.'
 # PSX CPU Overclock
-# Get configuration from distribution.conf and set to retrorun.cfg
 get_setting "psx_cpu_overclock"
 echo "psx_cpu_overclock:${EES}"
 if [ "${EES}" == "auto" ] || [ "${EES}" == "false" ] || [ "${EES}" == "none" ] || [ "${EES}" == "0" ]; then
@@ -322,13 +437,62 @@ if [ "${EES}" == "auto" ] || [ "${EES}" == "false" ] || [ "${EES}" == "none" ] |
 else
 	if [[ "${CORE}" == "duckstation" ]]; then
 		sed -i "/^duckstation_CPU.Overclock/d" ${RRCONF}
+		echo "duckstation_CPU.Overclock = ${EES}" >> ${RRCONF}
+	fi
+fi
+
+### PSX SWANSTATION ###
+echo 'Psx-swanstation settings.'
+# PSX CPU Overclock
+get_setting "psx_cpu_overclock"
+echo "psx_cpu_overclock:${EES}"
+if [ "${EES}" == "auto" ] || [ "${EES}" == "false" ] || [ "${EES}" == "none" ] || [ "${EES}" == "0" ]; then
+	if [[ "${CORE}" == "swanstation" ]]; then
+		sed -i "/^swanstation_CPU.Overclock/d" ${RRCONF}
+		echo 'swanstation_CPU.Overclock = 100' >> ${RRCONF}
+	fi
+else
+	if [[ "${CORE}" == "swanstation" ]]; then
+		sed -i "/^swanstation_CPU.Overclock/d" ${RRCONF}
+		echo "swanstation_CPU.Overclock = ${EES}" >> ${RRCONF}
+	fi
+fi
+
+### PPSSPP (PSP) ###
+echo 'PPSSPP settings.'
+# PPSSPP FrameSkip
+get_setting "frameskip"
+echo "frameskip:${EES}"
+if [ "${EES}" == "auto" ] || [ "${EES}" == "false" ] || [ "${EES}" == "none" ] || [ "${EES}" == "0" ]; then
+	if [[ "${CORE}" == "ppsspp" ]]; then
+		sed -i "/^ppsspp_frameskip/d" ${RRCONF}
+		echo 'ppsspp_frameskip = 0' >> ${RRCONF}
+	fi
+else
+	if [[ "${CORE}" == "ppsspp" ]]; then
+		sed -i "/^ppsspp_frameskip/d" ${RRCONF}
+		echo "ppsspp_frameskip = ${EES}" >> ${RRCONF}
+	fi
+fi
+
+# PPSSPP rendering mode
+get_setting "rendering_mode"
+echo "rendering_mode:${EES}"
+if [ "${EES}" == "auto" ] || [ "${EES}" == "false" ] || [ "${EES}" == "none" ] || [ "${EES}" == "0" ]; then
+	if [[ "${CORE}" == "ppsspp" ]]; then
+		sed -i "/^ppsspp_rendering_mode=/d" ${RRCONF}
+		echo 'ppsspp_rendering_mode = buffered' >> ${RRCONF}
+	fi
+else
+	if [[ "${CORE}" == "ppsspp" ]]; then
+		sed -i "/^ppsspp_rendering_mode=/d" ${RRCONF}
+		echo "ppsspp_rendering_mode = ${EES}" >> ${RRCONF}
 	fi
 fi
 
 ### BEETLE VB SETTINGS ###
 echo 'Beetle-vb settings.'
 # Beetle VB - Palette
-# Get configuration from distribution.conf and set to retrorun.cfg
 get_setting "palette"
 echo "palette:${EES}"
 if [ "${EES}" == "auto" ] || [ "${EES}" == "false" ] || [ "${EES}" == "none" ] || [ "${EES}" == "0" ]; then
@@ -352,7 +516,11 @@ EE_DEVICE=$(cat /storage/.config/.OS_ARCH)
 echo 'confguring inputs on device:'$EE_DEVICE
 if [[ "$EE_DEVICE" == "RG351V" ]] || [[ "$EE_DEVICE" == "RG351MP" ]]
 then
-	ln -s /dev/input/event4 /dev/input/by-path/platform-odroidgo2-joypad-event-joystick
+	if [[ $(cat /sys/firmware/devicetree/base/model | tr '\0' '\n') == *"D007 Plus"* ]]; then
+		ln -s /dev/input/event5 /dev/input/by-path/platform-odroidgo2-joypad-event-joystick
+	else
+		ln -s /dev/input/event4 /dev/input/by-path/platform-odroidgo2-joypad-event-joystick
+	fi
 else
 	ln -s /dev/input/event3 /dev/input/by-path/platform-odroidgo2-joypad-event-joystick
 fi

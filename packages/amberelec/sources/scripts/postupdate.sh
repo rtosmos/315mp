@@ -8,7 +8,7 @@ RACONF="/storage/.config/retroarch/retroarch.cfg"
 LAST_UPDATE_FILE="/storage/.lastupdateversion"
 DEVICE="$(cat /storage/.config/.OS_ARCH)"
 ECWOLFCONF="/storage/.config/distribution/ecwolf/ecwolf.cfg"
-
+SCUMMVM_CONF_FILES=("/storage/roms/bios/scummvm.ini" "/storage/.config/scummvm/scummvm.ini")
 # 2021-12-15
 ## Parse LAST_UPDATE_VERSION.  This variable will be the date of the previous upgrade. Ex: 20211222.
 ## - This variable can be used to execute upgrade logic only when crossing a version threshold.
@@ -36,13 +36,145 @@ if [[ -f "${LAST_UPDATE_FILE}" ]]; then
 fi
 echo "last update version: ${LAST_UPDATE_VERSION}"
 
-## 2023-01-15 
+## 2024-05-07
+## Allow rollback to old releases
+if [[ "$LAST_UPDATE_VERSION" -le "20240507" ]]; then
+  mkdir -p /storage/.config/emulationstation/scripts
+  cp /usr/bin/es_env.sh /storage/.config/emulationstation/scripts
+fi
+
+## 2024-05-06
+## Set RetroArch menu widget scale
+if [[ "$LAST_UPDATE_VERSION" -le "20240506" ]]; then
+  sed -i "/menu_widget_scale_factor =/d" ${RACONF}
+  echo 'menu_widget_scale_factor = "1.250000"' >> ${RACONF}
+fi
+
+## 2024-05-10
+## Delete global.powersave_es setting
+if [[ "$LAST_UPDATE_VERSION" -le "20240510" ]]; then
+  sed -i "/global.powersave_es=/d" ${CONF}
+fi
+
+## 2024-05-06
+## Set new defaults after ES upgrade
+if [[ "$LAST_UPDATE_VERSION" -le "20240506" ]]; then
+  rm -rf "/storage/.config/emulationstation/scripts/"
+
+  sed -i '
+        # delete lines
+        /global.autosave=/d;
+	/global.savestates=/d;
+	/global.incrementalsavestates=/d;
+	/global.bezel=/d;
+	/gba.bezel=/d;
+	/gamegear.bezel.overlay.grid=/d;
+	/gamegear.bezel.overlay.shadow=/d;
+	/gb.bezel.overlay.grid=/d;
+	/gb.bezel.overlay.shadow=/d;
+	/gbh.bezel.overlay.grid=/d;
+	/gbh.bezel.overlay.shadow=/d;
+	/gbc.bezel.overlay.grid=/d;
+	/gbc.bezel.overlay.shadow=/d;
+	/gbch.bezel.overlay.grid=/d;
+	/gbch.bezel.overlay.shadow=/d;
+	/ggh.bezel.overlay.grid=/d;
+	/ggh.bezel.overlay.shadow=/d;
+	/gamegear.bezel.overlay.grid=/d;
+	/gamegear.bezel.overlay.shadow=/d;
+	/gamegearh.bezel.overlay.grid=/d;
+	/gamegearh.bezel.overlay.shadow=/d;
+	/supervision.bezel.overlay.grid=/d;
+	/supervision.bezel.overlay.shadow=/d;
+	/wonderswan.bezel.overlay.grid=/d;
+	/wonderswan.bezel.overlay.shadow=/d;
+	/wonderswancolor.bezel.overlay.grid=/d;
+	/wonderswancolor.bezel.overlay.shadow=/d;
+	/gba.bezel.overlay.grid=/d;
+	/gba.bezel.overlay.shadow=/d;
+	/gbah.bezel.overlay.grid=/d;
+	/gbah.bezel.overlay.shadow=/d;
+	/arduboy.bezel.overlay.grid=/d;
+	/arduboy.bezel.overlay.shadow=/d;
+	/gameking.bezel.overlay.grid=/d;
+	/gameking.bezel.overlay.shadow=/d;
+  ' ${CONF}
+
+  echo "global.autosave=1" >> ${CONF}
+  echo "global.savestates=1" >> ${CONF}
+  echo "global.incrementalsavestates=2" >> ${CONF}
+  echo "global.bezel=default" >> ${CONF}
+  echo "gamegear.bezel.overlay.grid=1" >> ${CONF}
+  echo "gamegear.bezel.overlay.shadow=1" >> ${CONF}
+  echo "gb.bezel.overlay.grid=1" >> ${CONF}
+  echo "gb.bezel.overlay.shadow=1" >> ${CONF}
+  echo "gbh.bezel.overlay.grid=1" >> ${CONF}
+  echo "gbh.bezel.overlay.shadow=1" >> ${CONF}
+  echo "gbc.bezel.overlay.grid=1" >> ${CONF}
+  echo "gbc.bezel.overlay.shadow=1" >> ${CONF}
+  echo "gbch.bezel.overlay.grid=1" >> ${CONF}
+  echo "gbch.bezel.overlay.shadow=1" >> ${CONF}
+  echo "ggh.bezel.overlay.grid=1" >> ${CONF}
+  echo "ggh.bezel.overlay.shadow=1" >> ${CONF}
+  echo "gamegear.bezel.overlay.grid=1" >> ${CONF}
+  echo "gamegear.bezel.overlay.shadow=1" >> ${CONF}
+  echo "gamegearh.bezel.overlay.grid=1" >> ${CONF}
+  echo "gamegearh.bezel.overlay.shadow=1" >> ${CONF}
+  echo "supervision.bezel.overlay.grid=1" >> ${CONF}
+  echo "supervision.bezel.overlay.shadow=1" >> ${CONF}
+  echo "wonderswan.bezel.overlay.grid=1" >> ${CONF}
+  echo "wonderswan.bezel.overlay.shadow=1" >> ${CONF}
+  echo "wonderswancolor.bezel.overlay.grid=1" >> ${CONF}
+  echo "wonderswancolor.bezel.overlay.shadow=1" >> ${CONF}
+
+  if [ "$(cat /usr/config/.OS_ARCH)" == "RG351V" ] || [ "$(cat /usr/config/.OS_ARCH)" == "RG351MP" ] || [ "$(cat /usr/config/.OS_ARCH)" == "RG552" ]; then
+    echo "gba.bezel.overlay.grid=1" >> ${CONF}
+    echo "gba.bezel.overlay.shadow=1" >> ${CONF}
+    echo "gbah.bezel.overlay.grid=1" >> ${CONF}
+    echo "gbah.bezel.overlay.shadow=1" >> ${CONF}
+    echo "arduboy.bezel.overlay.grid=1" >> ${CONF}
+    echo "arduboy.bezel.overlay.shadow=1" >> ${CONF}
+  fi
+
+  if [ "$(cat /usr/config/.OS_ARCH)" == "RG552" ]; then
+    echo "gameking.bezel.overlay.grid=1" >> ${CONF}
+    echo "gameking.bezel.overlay.shadow=1" >> ${CONF}
+  fi
+
+fi
+
+## 2024-04-29
+## Set subtitles and speech to be both ON as default in ScummVM
+if [[ "$LAST_UPDATE_VERSION" -le "20240429" ]]; then
+  for file in "${SCUMMVM_CONF_FILES[@]}"; do
+  # Check if the file even exists, skip it if it does not
+    if [ ! -f "$file" ]; then
+      continue
+    fi
+
+  # Apparently scummvm can add multiples of the same settings, we
+  # wanna make sure we stick to the [scummvm] section of the ini file
+  # So we grab it and only check in there
+  scummvm_section=$(sed -n '/^\[scummvm\]/,/\[/p' "$file")
+
+  if ! grep -q "speech_mute=" <<< "$scummvm_section"; then
+    # For ease of use, this simply injects the parameter after [scummvm]
+    sed -i '/^\[scummvm\]/a speech_mute=false' "$file"
+  fi
+
+  if ! grep -q "subtitles=" <<< "$scummvm_section"; then
+    sed -i '/^\[scummvm\]/a subtitles=true' "$file"
+  fi
+  done
+fi
+
+## 2023-01-15
 ## Add all JoyAxis[]Deadzone values to ECWolf due to default deadzones being too low.
 if [ -e "${ECWOLFCONF}" ]; then
-        for i in {0..6}
-        do
-                sed -i "s/JoyAxis${i}Deadzone = .*/JoyAxis${i}Deadzone = 4;/g" ${ECWOLFCONF}
-        done
+  for i in {0..6}
+  do
+    sed -i "s/JoyAxis${i}Deadzone = .*/JoyAxis${i}Deadzone = 4;/g" ${ECWOLFCONF}
+  done
 fi
 
 ## 2023-01-09
@@ -54,6 +186,31 @@ if ! grep -q "^video_filter_dir" ${RACONF}; then
   echo 'video_filter_dir = "/usr/share/retroarch/filters/video"' >> ${RACONF}
 fi
 
+## 2024-04-27
+## RetroArch analog deadzone (fixes non-working analog on GO-Super Gamepad)
+if [[ "$LAST_UPDATE_VERSION" -le "20240427" ]]; then
+  sed -i "/input_analog_deadzone =/d" ${RACONF}
+  echo 'input_analog_deadzone = "0.900000"' >> ${RACONF}
+  sed -i "/input_analog_sensitivity =/d" ${RACONF}
+  echo 'input_analog_sensitivity = "0.700000"' >> ${RACONF}
+fi
+
+## 2024-03-28
+## global screensaver default values
+if [[ "$LAST_UPDATE_VERSION" -le "20240328" ]]; then
+  sed -i '/global.screensavertime=.*/d;' ${CONF}
+  echo 'global.screensavertime=15' >> ${CONF}
+  sed -i '/global.screensaverautoshutdowntime=.*/d;' ${CONF}
+  echo 'global.screensaverautoshutdowntime=off' >> ${CONF}
+fi
+
+## 2024-02-19
+## maxperf vircon32
+if [[ "$LAST_UPDATE_VERSION" -le "20240219" ]]; then
+  sed -i '/vircon32.maxperf=.*/d;' ${CONF}
+  echo 'vircon32.maxperf=1' >> ${CONF}
+fi
+
 ## 2022-12-29
 ## remove amiberry controller folder
 if [[ "$LAST_UPDATE_VERSION" -le "20221230" ]]; then
@@ -63,14 +220,14 @@ fi
 ## 2022-12-28
 ## clear mame/arcade autosave=0
 if [[ "$LAST_UPDATE_VERSION" -le "20221229" ]]; then
-  sed -i '/arcade.autosave=0/d;' /storage/.config/distribution/configs/distribution.conf
-  sed -i '/mame.autosave=0/d;' /storage/.config/distribution/configs/distribution.conf
+  sed -i '/arcade.autosave=0/d;' ${CONF}
+  sed -i '/mame.autosave=0/d;' ${CONF}
 fi
 
 ## 2022-12-24
 ## Reset RG351P volume to 100% (device has no soft-volume buttons)
 if [[ "$DEVICE" == "RG351P" ]]; then
-  sed -i 's/audio.volume=.*/audio.volume=100/g' /storage/.config/distribution/configs/distribution.conf
+  sed -i 's/audio.volume=.*/audio.volume=100/g' ${CONF}
 fi
 
 ## 2022-12-29
@@ -181,7 +338,6 @@ fi
 ## Additionally, DAC is the name of playback device instead of Playback, so update that in es_settings.
 if [[ "$DEVICE" == "RG552" && "$LAST_UPDATE_VERSION" -le "20220211" ]]; then
   cp /usr/config/asound.conf /storage/.config/asound.conf
-  sed -i 's/name="AudioDevice" value="Playback"/name="AudioDevice" value="DAC"/g' /storage/.config/emulationstation/es_settings.cfg
 fi
 
 # 2021-11-03 (konsumschaf)
@@ -192,8 +348,12 @@ sed -i '/int name="audio.display_titles_time" value="120"/d;
        ' /storage/.config/emulationstation/es_settings.cfg
 
 # set savestate_thumbnail_enable = true (required for savestate menu in ES)
-sed -i "/savestate_thumbnail_enable =/d" ${RACONF}
-echo "savestate_thumbnail_enable = "true"" >> ${RACONF}
+sed -i '/savestate_thumbnail_enable =/d' ${RACONF}
+echo 'savestate_thumbnail_enable = "true"' >> ${RACONF}
+
+# set network_cmd_enable = true (required for save and restore)
+sed -i '/network_cmd_enable =/d' ${RACONF}
+echo 'network_cmd_enable = "true"' >> ${RACONF}
 
 # Sync ES locale only after update
 if [ ! -d "/storage/.config/emulationstation/locale" ]
@@ -211,56 +371,20 @@ else
   rsync -a --delete /usr/config/emulationstation/resources/ /storage/.config/emulationstation/resources/ &
 fi
 
+# Sync amiberry resources after update
+if [ ! -d "/storage/.config/amiberry/data" ]
+then
+  rsync -a /usr/config/amiberry/data/ /storage/.config/amiberry/data/ &
+else
+  rsync -a --delete /usr/config/amiberry/data/ /storage/.config/amiberry/data/ &
+fi
+
 ## 2021-10-07
 ## Copy es_input.cfg over on every update
 ## This prevents a user with an old es_input from getting the 'input config scree'
 ### I don't believe there is a use case where a user needed to customize es_input.xml intentionally
 if [ -f /usr/config/emulationstation/es_input.cfg ]; then
 	cp /usr/config/emulationstation/es_input.cfg /storage/.emulationstation/
-fi
-
-## 2021-10-04
-## Remove old bezel configs
-### Done in a single sed to keep performance fast
-sed -i '/global.bezel=0/d;
-        /gb.bezel=351ELEC-Gameboy/d;
-        /gamegear.bezel=351ELEC-Gamegear/d;
-        /gbc.bezel=351ELEC-GameboyColor/d;
-        /pokemini.bezel=351ELEC-PokemonMini/d;
-        /supervision.bezel=351ELEC-Supervision/d;
-        ' /storage/.config/distribution/configs/distribution.conf
-
-## 2021-12-15
-## Do not break automatic bezel support for users upgrading from pineapple forrest.
-## Pineapple Forest bezels assumed 'auto' would mean 'on', but should be 'off'
-### - Doing this after other bezel changes from 2021-10-04 so empty values are consistent for upgrades prior to pineapple forrest.
-### - Only running for versions less than current date - this ensures if user sets to 'auto' after upgrade, settings will be 'off' as desired
-if [[ "$LAST_UPDATE_VERSION" -le "20211215" ]]; then
-  grep -qF 'global.bezel=' "${CONF}"|| echo 'global.bezel=default' >> "${CONF}"
-
-  grep -qF 'gamegear.bezel.overlay.grid=' "${CONF}"|| echo 'gamegear.bezel.overlay.grid=1' >> "${CONF}"
-  grep -qF 'gamegear.bezel.overlay.shadow=' "${CONF}"|| echo 'gamegear.bezel.overlay.shadow=1' >> "${CONF}"
-
-  grep -qF 'gb.bezel.overlay.grid=' "${CONF}"|| echo 'gb.bezel.overlay.grid=1' >> "${CONF}"
-  grep -qF 'gb.bezel.overlay.shadow=' "${CONF}"|| echo 'gb.bezel.overlay.shadow=1' >> "${CONF}"
-
-  grep -qF 'gbc.bezel.overlay.grid=' "${CONF}"|| echo 'gbc.bezel.overlay.grid=1' >> "${CONF}"
-  grep -qF 'gbc.bezel.overlay.shadow=' "${CONF}"|| echo 'gbc.bezel.overlay.shadow=1' >> "${CONF}"
-
-  grep -qF 'ngp.bezel.overlay.grid=' "${CONF}"|| echo 'ngp.bezel.overlay.grid=1' >> "${CONF}"
-  grep -qF 'ngp.bezel.overlay.shadow=' "${CONF}"|| echo 'ngp.bezel.overlay.shadow=1' >> "${CONF}"
-
-  grep -qF 'ngpc.bezel.overlay.grid=' "${CONF}"|| echo 'ngpc.bezel.overlay.grid=1' >> "${CONF}"
-  grep -qF 'ngpc.bezel.overlay.shadow=' "${CONF}"|| echo 'ngpc.bezel.overlay.shadow=1' >> "${CONF}"
-
-  grep -qF 'pokemini.bezel.overlay.grid=' "${CONF}"|| echo 'pokemini.bezel.overlay.grid=1' >> "${CONF}"
-  grep -qF 'pokemini.bezel.overlay.shadow=' "${CONF}"|| echo 'pokemini.bezel.overlay.shadow=1' >> "${CONF}"
-
-  grep -qF 'supervision.bezel.overlay.grid=' "${CONF}"|| echo 'supervision.bezel.overlay.grid=1' >> "${CONF}"
-  grep -qF 'supervision.bezel.overlay.shadow=' "${CONF}"|| echo 'supervision.bezel.overlay.shadow=1' >> "${CONF}"
-
-  grep -qF 'wonderswan.bezel.overlay.grid=' "${CONF}"|| echo 'wonderswan.bezel.overlay.grid=1' >> "${CONF}"
-  grep -qF 'wonderswan.bezel.overlay.shadow=' "${CONF}"|| echo 'wonderswan.bezel.overlay.shadow=1' >> "${CONF}"
 fi
 
 ## 2021-09-30:
@@ -275,7 +399,7 @@ cp -f /usr/config/SDL-GameControllerDB/gamecontrollerdb.txt /storage/.config/SDL
 
 ## 2021-09-19:
 ## Replace libretro settings in distribution.conf
-sed -i 's/.emulator=libretro/.emulator=retroarch/g' /storage/.config/distribution/configs/distribution.conf
+sed -i 's/.emulator=libretro/.emulator=retroarch/g' ${CONF}
 
 ## 2021-09-17:
 ## Reset advanemame config
@@ -329,13 +453,6 @@ elif grep -q "global.retroachievements.leaderboards=1" ${CONF}; then
 	echo "global.retroachievements.leaderboards=enabled" >> ${CONF}
 fi
 
-## 2021-05-27
-## Enable D-Pad to analogue at boot until we create a proper toggle
-sed -i "/## Enable D-Pad to analogue at boot until we create a proper toggle/d" /storage/.config/distribution/configs/distribution.conf
-sed -i "/global.analogue/d" /storage/.config/distribution/configs/distribution.conf
-echo '## Enable D-Pad to analogue at boot until we create a proper toggle' >> /storage/.config/distribution/configs/distribution.conf
-echo 'global.analogue=1' >> /storage/.config/distribution/configs/distribution.conf
-
 ## 2021-05-17:
 ## Remove mednafen core files from /tmp/cores
 if [ "$(ls /tmp/cores/mednafen_* | wc -l)" -ge "1" ]; then
@@ -375,9 +492,9 @@ fi
 ## Migrate old emuoptions.conf if it exist
 if [ -e "/storage/.config/distribution/configs/emuoptions.conf" ]
 then
-	echo "# -------------------------------" >> /storage/.config/distribution/configs/distribution.conf
-	cat /storage/.config/distribution/configs/emuoptions.conf >> /storage/.config/distribution/configs/distribution.conf
-	echo "# -------------------------------" >> /storage/.config/distribution/configs/distribution.conf
+	echo "# -------------------------------" >> ${CONF}
+	cat /storage/.config/distribution/configs/emuoptions.conf >> ${CONF}
+	echo "# -------------------------------" >> ${CONF}
 	mv /storage/.config/distribution/configs/emuoptions.conf /storage/.config/distribution/configs/emuoptions.conf.bak
 fi
 
@@ -399,7 +516,7 @@ elif [ "$(cat /usr/config/.OS_ARCH)" == "RG552" ]; then
 fi
 
 ## clear faulty lines from distribution.conf
-sed -i 's/^=$//g' /storage/.config/distribution/configs/distribution.conf
+sed -i 's/^=$//g' ${CONF}
 
 ## Just to know when the last update took place
 echo Last Update: `date -Iminutes` > /storage/.lastupdate
